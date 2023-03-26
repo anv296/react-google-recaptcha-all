@@ -10,4 +10,3 @@ export default defineConfig({
     setupFiles: './vitest-setup.js'
   }
 });
-
