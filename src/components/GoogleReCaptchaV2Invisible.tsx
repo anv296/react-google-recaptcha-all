@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { useGoogleReCaptchaV2Checkbox } from '../provider/useGoogleRecaptcha';
+import { useGoogleReCaptchaV2Invisible } from '../provider/useGoogleRecaptcha';
 
-export function GoogleReCaptchaV2CheckBox() {
-  const googleReCaptchaContextValue = useGoogleReCaptchaV2Checkbox();
-  console.log('@@@ GoogleReCaptchaV2CheckBox');
+export function GoogleReCaptchaV2Invisible() {
+  const googleReCaptchaContextValue = useGoogleReCaptchaV2Invisible();
+  console.log('@@@ GoogleReCaptchaV2Invisible', googleReCaptchaContextValue);
 
   useEffect(() => {
     const { executeReCaptcha } = googleReCaptchaContextValue;

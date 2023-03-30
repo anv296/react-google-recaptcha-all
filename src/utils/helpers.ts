@@ -1,4 +1,5 @@
 interface InjectGoogleReCaptchaScriptParams {
+  version?: 'v2Invisible' | 'v2Checkbox' | 'v3'
   render: string;
   onLoadCallbackName: string;
   onLoad: () => void;
@@ -73,13 +74,14 @@ export const cleanGoogleReCaptcha = (scriptId: string, container?: HTMLElement |
 };
 
 export const injectGoogleReCaptchaScript = ({
+  // version,
   render,
   onLoadCallbackName,
   locale,
   onLoad,
   scriptProps: { nonce = '', defer = false, async = false, id = '', appendTo } = {}
 }: InjectGoogleReCaptchaScriptParams) => {
-  const scriptId = id || 'google-recaptcha-v3';
+  const scriptId = id || 'google-recaptcha';
 
   if (isScriptInjected(scriptId)) {
     onLoad();
@@ -88,7 +90,7 @@ export const injectGoogleReCaptchaScript = ({
 
   const js = document.createElement('script');
   js.id = scriptId;
-  js.src = `https://www.google.com/recaptcha/api.js?render=${render}${
+  js.src = `https://www.recaptcha.net/recaptcha/api.js?render=${render}${
     render === 'explicit' ? `&onload=${onLoadCallbackName}` : ''
   }${locale ? `&hl=${locale}` : ''}`;
 

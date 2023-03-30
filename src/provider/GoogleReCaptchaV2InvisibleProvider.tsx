@@ -13,7 +13,7 @@ import {
   logWarningMessage
 } from '../utils/helpers';
 
-interface GoogleReCaptchaProviderProps {
+interface GoogleReCaptchaV2InvisibleProviderProps {
   reCaptchaKey: string; // sitekey
   locale?: string; // hl
   scriptProps?: {
@@ -27,23 +27,23 @@ interface GoogleReCaptchaProviderProps {
   container?: {
     element?: string | HTMLElement;
     parameters: {
-      // badge?: 'inline' | 'bottomleft' | 'bottomright';
-      theme?: 'dark' | 'light';
-      size?: 'compact' | 'normal';
+      badge?: 'inline' | 'bottomleft' | 'bottomright';
+      size?: 'invisible';
       tabindex?: number;
-      callback?: () => void;
+      callback?: (token: any) => void;
       expiredCallback?: () => void;
       errorCallback?: () => void;
+      isolated?: boolean;
     };
   };
   children: ReactNode;
 }
 
-export interface IGoogleReCaptchaConsumerProps {
+export interface GoogleReCaptchaV2InvisibleConsumerProps {
   executeReCaptcha?: (action?: string) => Promise<string>;
   container?: string | HTMLElement;
 }
-const GoogleReCaptchaContext = createContext<IGoogleReCaptchaConsumerProps>({
+const GoogleReCaptchaV2InvisibleContext = createContext<GoogleReCaptchaV2InvisibleConsumerProps>({
   executeReCaptcha: () => {
     // This default context function is not supposed to be called
     throw Error(
@@ -52,16 +52,16 @@ const GoogleReCaptchaContext = createContext<IGoogleReCaptchaConsumerProps>({
   }
 });
 
-const { Consumer: GoogleReCaptchaConsumer } = GoogleReCaptchaContext;
+const { Consumer: GoogleReCaptchaV2InvisibleConsumer } = GoogleReCaptchaV2InvisibleContext;
 
-export function GoogleReCaptchaProvider({
-  reCaptchaKey,
-  scriptProps,
-  locale,
-  container,
-  children
-}: GoogleReCaptchaProviderProps) {
-  console.log('@ provider');
+export function GoogleReCaptchaV2InvisibleProvider({
+                                          reCaptchaKey,
+                                          scriptProps,
+                                          locale,
+                                          container,
+                                          children
+                                        }: GoogleReCaptchaV2InvisibleProviderProps) {
+  console.log('@ GoogleReCaptchaV2InvisibleProvider');
   const [googleReCaptchaInstance, setGoogleReCaptchaInstance] = useState<null | {
     execute: Function;
   }>(null);
@@ -72,28 +72,28 @@ export function GoogleReCaptchaProvider({
 
   useEffect(() => {
     if (!reCaptchaKey) {
-      logWarningMessage(`<GoogleReCaptchaProvider /> recaptcha key not provided`);
+      logWarningMessage(`<GoogleReCaptchaV2InvisibleProvider /> recaptcha key not provided`);
       return;
     }
 
-    const scriptId = scriptProps?.id || 'google-recaptcha-v2';
+    const scriptId = scriptProps?.id || 'google-recaptcha-v2-invisible';
     const onLoadCallbackName = scriptProps?.onLoadCallbackName || 'onReCaptchaLoadCallback';
 
     (window as unknown as { [key: string]: () => void })[onLoadCallbackName] = () => {
       const googleRecaptcha = (window as any).grecaptcha;
 
       const googleRecaptchaParams = {
-        // badge: 'inline',
-        size: 'normal',
+        badge: 'inline',
+        size: 'invisible',
         sitekey: reCaptchaKey,
-        ...(container?.parameters || {})
+        ...(!!container && {...container.parameters})
       };
       clientId.current = googleRecaptcha.render(container?.element, googleRecaptchaParams);
     };
 
     const onLoad = () => {
       if (!window || !(window as any).grecaptcha) {
-        logWarningMessage(`<GoogleRecaptchaProvider /> Recaptcha script is not available`);
+        logWarningMessage(`<GoogleReCaptchaV2InvisibleProvider /> Recaptcha script is not available`);
         return;
       }
 
@@ -109,10 +109,9 @@ export function GoogleReCaptchaProvider({
     };
 
     injectGoogleReCaptchaScript({
-      render: container?.element ? 'explicit' : reCaptchaKey,
+      version: 'v2Invisible',
+      render: container?.element ? 'explicit' : onLoadCallbackName,
       onLoadCallbackName,
-      // useEnterprise,
-      // useRecaptchaNet,
       scriptProps,
       locale,
       onLoad,
@@ -123,8 +122,6 @@ export function GoogleReCaptchaProvider({
       cleanGoogleReCaptcha(scriptId, container?.element);
     };
   }, [
-    // useEnterprise,
-    // useRecaptchaNet,
     scriptPropsJson,
     parametersJson,
     locale,
@@ -133,12 +130,12 @@ export function GoogleReCaptchaProvider({
   ]);
 
   const executeReCaptcha = useCallback(
-    (action?: string) => {
+    () => {
       if (!googleReCaptchaInstance || !googleReCaptchaInstance.execute) {
-        throw new Error('<GoogleReCaptchaProvider /> Google Recaptcha has not been loaded');
+        throw new Error('<GoogleReCaptchaV2InvisibleProvider /> Google Recaptcha has not been loaded');
       }
 
-      return googleReCaptchaInstance.execute(clientId.current, { action });
+      return googleReCaptchaInstance.execute(clientId.current);
     },
     [googleReCaptchaInstance, clientId]
   );
@@ -152,10 +149,10 @@ export function GoogleReCaptchaProvider({
   );
 
   return (
-    <GoogleReCaptchaContext.Provider value={googleReCaptchaContextValue}>
+    <GoogleReCaptchaV2InvisibleContext.Provider value={googleReCaptchaContextValue}>
       {children}
-    </GoogleReCaptchaContext.Provider>
+    </GoogleReCaptchaV2InvisibleContext.Provider>
   );
 }
 
-export { GoogleReCaptchaConsumer, GoogleReCaptchaContext };
+export { GoogleReCaptchaV2InvisibleConsumer, GoogleReCaptchaV2InvisibleContext };
